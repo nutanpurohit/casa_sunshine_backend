@@ -82,13 +82,13 @@ router.get('/bookings/all', auth, Booking.all)
 router.patch('/bookings/update/:id', auth, Booking.update)
 
 // Delete Booking
-router.patch('/bookings/delete/:id', auth, Booking.delete)
+router.patch('/bookings/delete/:id', auth, Booking.deleteBooking)
 
 // Booking By Id
 router.get('/bookings/bookingById/:id', auth, Booking.bookingById)
 
 // Bookings By Agent Id
-router.get('/bookings/bookingByAgentId', auth, Booking.bookingByAgentId)
+router.get('/bookings/bookingByAgentId/:id', auth, Booking.bookingByAgentId)
 
 // Booking History By Id
 router.get('/bookings/history/bookingHistoryById/:id', auth, Booking.bookingHistoryById)
@@ -109,7 +109,7 @@ router.get('/transactions/all', auth, Transaction.all)
 router.get('/transactions/transactionById/:id', auth, Transaction.transactionById)
 
 // Transactions By Booking Id
-router.get('/transactions/transactionByBookingId/:id', auth, Transaction.transactionById)
+router.get('/transactions/transactionByBookingId/:id', auth, Transaction.transactionByBookingId)
 
 router.use('*', (req, res) => {
     return res.status(404).json({

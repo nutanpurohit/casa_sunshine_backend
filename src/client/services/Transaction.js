@@ -3,13 +3,10 @@ const {v4: uuidv4} = require("uuid");
 
 exports.add = async (req, res) => {
     try {
-        const bookingId = req.params.id;
-        let data = req.body;
-
+        let data = req.body.transactionData;
         let transactionData = {
             ...data,
             "id": uuidv4(),
-            "bookingId": bookingId,
             "isDeleted": false
         }
 

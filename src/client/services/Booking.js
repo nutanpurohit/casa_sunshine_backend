@@ -3,29 +3,63 @@ const {v4: uuidv4} = require("uuid");
 
 exports.add = async (req, res) => {
     try {
-        let data = req.body;
+        let data = req.body.bookingData;
         let agentId;
-        const agent = await Agent.findAll({
-            where: {
-                email: data.agentEmail,
-                name: data.agentName,
-                type: data.agentType,
-                isDeleted: false
-            }
-        });
-        if (agent) {
-            agentId = agent[0].dataValues.id
-            delete data.agentEmail
-            delete data.agentName
-            delete data.agentType
 
+        if (data.agentEmail !== "" || data.agentName !== "") {
+            const agent = await Agent.findAll({
+                where: {
+                    email: data.agentEmail,
+                    name: data.agentName,
+                    type: data.agentType,
+                    isDeleted: false
+                }
+            });
+            if (agent) {
+                agentId = agent[0].dataValues.id
+                delete data.agentEmail
+                delete data.agentName
+                delete data.agentType
+
+                let bookingData = {
+                    ...data,
+                    "id": uuidv4(),
+                    "agentId": agentId,
+                    "isDeleted": false
+                }
+                Booking.findOne({
+                    where: {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        checkInDate: data.checkInDate,
+                        checkOutDate: data.checkOutDate,
+                    }
+                }).then(async (booking)=> {
+                    if (!booking) {
+                        Booking.create(bookingData)
+                            .then(async (bookings) => {
+                                res.status(201).send({bookings: bookings})
+                            })
+                            .catch(err => {
+                                res.status(400).send(err)
+                            })
+                    }
+                    else {
+                        res.status(400).send('Booking already exists!')
+                    }
+                }).catch(error => {
+                    res.status(400).send("Find One Error",error);
+                })
+
+            } else {
+                res.status(400).send('Agent not found. Please add new agent!')
+            }
+        } else {
             let bookingData = {
                 ...data,
                 "id": uuidv4(),
-                "agentId": agentId,
                 "isDeleted": false
             }
-            console.log('Booking data', bookingData)
             Booking.findOne({
                 where: {
                     firstName: data.firstName,
@@ -49,9 +83,6 @@ exports.add = async (req, res) => {
             }).catch(error => {
                 res.status(400).send("Find One Error",error);
             })
-
-        } else {
-            res.status(400).send('Agent not found. Please add new agent!')
         }
     }
     catch (err) {
@@ -78,8 +109,10 @@ exports.update = async (req, res) => {
     try {
         const bookingId = req.params.id
         const bookingHistory = await Booking.findOne({
-            id: bookingId,
-            isDeleted: false
+            where: {
+                id: bookingId,
+                isDeleted: false
+            }
         })
 
         const bookingHistoryData = {
@@ -88,35 +121,55 @@ exports.update = async (req, res) => {
             "bookingHistory": bookingHistory.dataValues,
             "isDeleted": false
         }
-
-        BookingHistory.create(bookingHistoryData)
+        await BookingHistory.create(bookingHistoryData)
             .then(async (bookings) => {
-                res.status(201).send({bookingHistory: bookings})
+                // res.status(201).send({bookingHistory: bookings})
             })
             .catch(err => {
-                res.status(400).send(err)
+                // res.status(400).send(err)
             })
 
-        let data = req.body;
+        let data = req.body.bookingData;
         let agentId;
-        const agent = await Agent.findAll({
-            where: {
-                email: data.agentEmail,
-                name: data.agentName,
-                type: data.agentType,
-                isDeleted: false
-            }
-        });
-        if (agent)  {
-            agentId = agent[0].dataValues.id
-            delete data.agentEmail
-            delete data.agentName
-            delete data.agentType
+        if (data.agnetType === 'Agent') {
+            const agent = await Agent.findAll({
+                where: {
+                    email: data.agentEmail,
+                    name: data.agentName,
+                    type: data.agentType,
+                    isDeleted: false
+                }
+            });
+            if (agent)  {
+                agentId = agent[0].dataValues.id
+                delete data.agentEmail
+                delete data.agentName
+                delete data.agentType
 
-            let bookingData = {
-                ...data,
-                "agentId": agentId,
+                let bookingData = {
+                    ...data,
+                    "agentId": agentId,
+                }
+
+                const booking = await Booking.update(bookingData, {
+                    where: {
+                        id: bookingId,
+                        isDeleted: false
+                    }
+                });
+
+                if (booking) {
+                    return res.status(200).send("Successfully updated");
+                }
+                else {
+                    return res.status(400).send("Not updated");
+                }
+
+            }  else {
+                res.status(400).send('Agent not found. Please add new agent!')
             }
+        } else {
+            let bookingData = data
 
             const booking = await Booking.update(bookingData, {
                 where: {
@@ -131,17 +184,15 @@ exports.update = async (req, res) => {
             else {
                 return res.status(400).send("Not updated");
             }
-
-        }  else {
-            res.status(400).send('Agent not found. Please add new agent!')
         }
+
     }
     catch (error) {
         res.status(400).send(error);
     }
 }
 
-exports.delete = async (req, res) => {
+exports.deleteBooking = async (req, res) => {
     try {
         const bookingId = req.params.id
         const booking = await Booking.update({

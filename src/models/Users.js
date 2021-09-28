@@ -28,14 +28,10 @@ const User = sequelize.define('users', {
     notification_token: {
         type: Sequelize.STRING,
     },
-    // tokens: [
-    //     {
-    //         token: {
-    //             type: Sequelize.STRING,
-    //             allowNull: false,
-    //         }
-    //     }
-    // ],
+    tokens: {
+        type: Sequelize.JSON,
+        allowNull: true,
+    },
     isDeleted: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

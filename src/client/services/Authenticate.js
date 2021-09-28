@@ -38,7 +38,7 @@ exports.signup = async (req, res) => {
                 res.status(400).send('User already exists!')
             }
         }).catch(error => {
-            res.status(400).send("Find One Error",error);
+            res.status(400).send({"error": error});
         })
     }
     catch (err) {
@@ -72,7 +72,18 @@ exports.login = async (req, res) => {
 }
 
 exports.logout = async (req, res) => {
-    res.send('Logged out');
+    try {
+        const validTokens = Object.values(JSON.parse(req.validUser.tokens))
+        const valid = validTokens.filter((token) => {
+            return token !== req.token;
+        })
+        const arrayToString = JSON.stringify(Object.assign({}, valid));
+        req.validUser.tokens = JSON.parse(arrayToString);
+        await req.validUser.save();
+        res.status(200).send("Logout Success");
+    } catch (e) {
+        res.status(500).send({error: e});
+    }
 }
 
 exports.profile = async (req, res) => {
@@ -221,5 +232,23 @@ exports.updatePassword = async (req, res) => {
 
 const generateToken = async function (id) {
     const token = await jwt.sign({ _id: id }, secret);
+    const user = await User.findOne({
+        where: {
+            id: id,
+            isDeleted: false
+        }
+    })
+    let tokenArray = []
+    if (user.tokens === null) {
+        tokenArray.push(token)
+        const arrayToString = JSON.stringify(Object.assign({}, tokenArray));
+        user.tokens = JSON.parse(arrayToString);
+    } else {
+        tokenArray = Object.values(JSON.parse(user.tokens))
+        tokenArray.push(token)
+        const arrayToString = JSON.stringify(Object.assign({}, tokenArray));
+        user.tokens = JSON.parse(arrayToString);
+    }
+    await user.save();
     return token;
 }
