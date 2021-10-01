@@ -82,7 +82,7 @@ router.get('/bookings/all', auth, Booking.all)
 router.patch('/bookings/update/:id', auth, Booking.update)
 
 // Delete Booking
-router.patch('/bookings/delete/:id', auth, Booking.deleteBooking)
+router.patch('/bookings/delete/:id', auth, Booking.delete)
 
 // Booking By Id
 router.get('/bookings/bookingById/:id', auth, Booking.bookingById)

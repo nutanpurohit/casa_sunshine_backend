@@ -14,8 +14,13 @@ const BookingHistory = sequelize.define('bookingHistory', {
         allowNull: true,
     },
     bookingHistory: {
-        type: Sequelize.JSON,
-        allowNull: true,
+        type: Sequelize.TEXT,
+        get: function() {
+            return JSON.parse(this.getDataValue("bookingHistory"));
+        },
+        set: function(value) {
+            return this.setDataValue("bookingHistory", JSON.stringify(value));
+        }
     },
     isDeleted: {
         type: Sequelize.BOOLEAN,

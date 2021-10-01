@@ -1,9 +1,21 @@
-const {Transaction} = require("../../models/main");
+const {Transaction, Booking} = require("../../models/main");
 const {v4: uuidv4} = require("uuid");
 
 exports.add = async (req, res) => {
     try {
         let data = req.body.transactionData;
+        // const {bookingId} = data
+        // console.log('Data Booking ID', bookingId)
+        // await Booking.findOne({
+        //     where: {
+        //         id: bookingId,
+        //         isDeleted: false
+        //     }
+        // }).then((response) => {
+        //     const bookingData = response.bookings?.dataValues
+        //     console.log('Booking Data', response.bookings?.dataValues)
+        //     if (bookingData === )
+        // })
         let transactionData = {
             ...data,
             "id": uuidv4(),

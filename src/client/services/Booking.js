@@ -121,17 +121,20 @@ exports.update = async (req, res) => {
             "bookingHistory": bookingHistory.dataValues,
             "isDeleted": false
         }
+
         await BookingHistory.create(bookingHistoryData)
             .then(async (bookings) => {
+                console.log('Booking History created: ', bookings)
                 // res.status(201).send({bookingHistory: bookings})
             })
             .catch(err => {
+                console.log('Booking History created error: ', err)
                 // res.status(400).send(err)
             })
 
         let data = req.body.bookingData;
         let agentId;
-        if (data.agnetType === 'Agent') {
+        if (data.agentType === 'Agent') {
             const agent = await Agent.findAll({
                 where: {
                     email: data.agentEmail,
@@ -192,7 +195,7 @@ exports.update = async (req, res) => {
     }
 }
 
-exports.deleteBooking = async (req, res) => {
+exports.delete = async (req, res) => {
     try {
         const bookingId = req.params.id
         const booking = await Booking.update({
@@ -205,10 +208,10 @@ exports.deleteBooking = async (req, res) => {
         });
 
         if (booking) {
-            return res.status(200).send("Successfully updated");
+            return res.status(200).send("Successfully deleted");
         }
         else {
-            return res.status(400).send("Not updated");
+            return res.status(400).send("Not deleted");
         }
     }
     catch (error) {
