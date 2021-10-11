@@ -3,7 +3,7 @@ const {v4: uuidv4} = require("uuid");
 
 exports.add = async (req, res) => {
     try {
-        let data = req.body;
+        let data = req.body.agentData;
 
         let userData = {
             ...data,
@@ -29,7 +29,7 @@ exports.add = async (req, res) => {
                 res.status(400).send('Agent already exists!')
             }
         }).catch(error => {
-            res.status(400).send("Find One Error",error);
+            res.status(400).send(error);
         })
     }
     catch (err) {

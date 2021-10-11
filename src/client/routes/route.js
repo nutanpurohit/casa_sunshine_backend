@@ -111,6 +111,9 @@ router.get('/transactions/transactionById/:id', auth, Transaction.transactionByI
 // Transactions By Booking Id
 router.get('/transactions/transactionByBookingId/:id', auth, Transaction.transactionByBookingId)
 
+// Generate Booking Report
+router.post('/bookings/generateBookingPDF/:id', auth, Booking.generateBookingPDF)
+
 router.use('*', (req, res) => {
     return res.status(404).json({
         success: false,

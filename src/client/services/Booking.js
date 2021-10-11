@@ -1,5 +1,6 @@
-const {Booking, Agent, BookingHistory} = require("../../models/main");
+const {Booking, Agent, BookingHistory, Transaction} = require("../../models/main");
 const {v4: uuidv4} = require("uuid");
+const {createPDF} = require("../../pdf/createPDF");
 
 exports.add = async (req, res) => {
     try {
@@ -303,6 +304,47 @@ exports.bookingHistoryDelete = async (req, res) => {
             return res.status(400).send("Not updated");
         }
     } catch (error) {
+        res.status(400).send(error);
+    }
+}
+
+exports.generateBookingPDF = async (req, res) => {
+    try {
+        const id = req.params.id
+        const booking = await Booking.findOne({
+            where: {
+                id: id,
+                isDeleted: false
+            }
+        });
+        if (booking) {
+            let agent
+            if (booking.agentId !== null) {
+                agent = await  Agent.findOne({
+                    where: {
+                        id: booking.agentId,
+                        isDeleted: false
+                    }
+                })
+            } else {
+                agent = {
+                    agentType: 'Direct'
+                }
+            }
+            let transaction = await Transaction.findAll({
+                where: {
+                    bookingId: id,
+                    isDeleted: false
+                }
+            })
+            transaction.sort((a, b) => {
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            });
+            await createPDF(booking, transaction, agent);
+            return res.status(200).send({booking, transaction, agent});
+        }
+    } catch (error) {
+        console.log('Error', error)
         res.status(400).send(error);
     }
 }
